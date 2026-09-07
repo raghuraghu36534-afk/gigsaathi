@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title th:text="${scheme.name + ' - GigSaathi'}">Scheme Details</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            min-height: 100vh;
+            background: #eef2ff;
+            color: #172033;
+            overflow-x: hidden;
+        }
+
+        /* =========================
+           ANIMATED BACKGROUND
+           ========================= */
+
+        .background {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            z-index: -1;
+            background:
+                    radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.20), transparent 30%),
+                    radial-gradient(circle at 90% 80%, rgba(14, 165, 233, 0.18), transparent 30%),
+                    #f8fafc;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(2px);
+            opacity: 0.35;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .blob-one {
+            width: 260px;
+            height: 260px;
+            background: #818cf8;
+            top: -80px;
+            left: -80px;
+        }
+
+        .blob-two {
+            width: 220px;
+            height: 220px;
+            background: #38bdf8;
+            bottom: -60px;
+            right: -50px;
+            animation-delay: 2s;
+        }
+
+        .blob-three {
+            width: 140px;
+            height: 140px;
+            background: #a78bfa;
+            top: 45%;
+            right: 10%;
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+
+            0%, 100% {
+                transform: translateY(0) scale(1);
+            }
+
+            50% {
+                transform: translateY(-25px) scale(1.05);
+            }
+        }
+
+
+        /* =========================
+           NAVBAR
+           ========================= */
+
+        .navbar {
+            height: 72px;
+            background: rgba(255, 255, 255, 0.78);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.7);
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 0 7%;
+
+            position: sticky;
+            top: 0;
+            z-index: 10;
+
+            animation: slideDown 0.7s ease;
+        }
+
+        @keyframes slideDown {
+
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+
+        .logo {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .logo-main {
+            color: #4f46e5;
+        }
+
+        .logo-second {
+            color: #111827;
+        }
+
+
+        .nav-badge {
+            padding: 8px 14px;
+            border-radius: 30px;
+
+            background: rgba(79, 70, 229, 0.08);
+            color: #4f46e5;
+
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+
+        /* =========================
+           MAIN
+           ========================= */
+
+        .container {
+            max-width: 1150px;
+            margin: 55px auto;
+            padding: 0 25px;
+
+            animation: pageAppear 0.9s ease;
+        }
+
+        @keyframes pageAppear {
+
+            from {
+                opacity: 0;
+                transform: translateY(25px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+
+        /* =========================
+           HEADER
+           ========================= */
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            margin-bottom: 35px;
+        }
+
+
+        .title-section h1 {
+            font-size: 38px;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+
+            margin-bottom: 8px;
+        }
+
+
+        .title-section p {
+            color: #64748b;
+            font-size: 15px;
+        }
+
+
+        /* =========================
+           BUTTONS
+           ========================= */
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+        }
+
+
+        .nav-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+
+            background: rgba(255, 255, 255, 0.8);
+            color: #4f46e5;
+
+            padding: 10px 16px;
+
+            border-radius: 10px;
+
+            text-decoration: none;
+
+            font-size: 13px;
+            font-weight: 600;
+
+            border: 1px solid rgba(79, 70, 229, 0.2);
+
+            transition: all 0.25s ease;
+        }
+
+
+        .nav-button:hover {
+            background: rgba(79, 70, 229, 0.1);
+            border-color: rgba(79, 70, 229, 0.4);
+        }
+
+
+        /* =========================
+           SCHEME CARD
+           ========================= */
+
+        .scheme-card {
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(15px);
+
+            border: 1px solid rgba(255, 255, 255, 0.9);
+
+            border-radius: 20px;
+
+            overflow: hidden;
+
+            box-shadow:
+                    0 20px 50px rgba(15, 23, 42, 0.08);
+
+            animation: cardAppear 1s ease;
+        }
+
+
+        @keyframes cardAppear {
+
+            from {
+                opacity: 0;
+                transform: scale(0.97);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+
+        .scheme-header {
+            padding: 30px 35px;
+
+            border-bottom: 1px solid #e5e7eb;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+        }
+
+
+        .scheme-title h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 12px;
+        }
+
+
+        .scheme-meta {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+
+        .scheme-badge {
+            padding: 6px 14px;
+
+            border-radius: 20px;
+
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+
+        .badge-central {
+            background: #e0e7ff;
+            color: #4f46e5;
+        }
+
+
+        .badge-state {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+
+        .badge-category {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+
+        /* =========================
+           SCHEME CONTENT
+           ========================= */
+
+        .scheme-content {
+            padding: 35px;
+        }
+
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+
+        .section h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 12px;
+        }
+
+
+        .section p {
+            color: #64748b;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+
+        .section ul {
+            color: #64748b;
+            font-size: 15px;
+            line-height: 1.6;
+            padding-left: 20px;
+        }
+
+
+        .section li {
+            margin-bottom: 8px;
+        }
+
+
+        /* =========================
+           ELIGIBILITY CARD
+           ========================= */
+
+        .eligibility-card {
+            background: #f8fafc;
+
+            border: 1px solid #e2e8f0;
+
+            border-radius: 12px;
+
+            padding: 20px;
+
+            margin-bottom: 20px;
+        }
+
+
+        .eligibility-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+
+        .eligibility-item:last-child {
+            border-bottom: none;
+        }
+
+
+        .eligibility-label {
+            font-weight: 600;
+            color: #475569;
+        }
+
+
+        .eligibility-value {
+            color: #64748b;
+        }
+
+
+        /* =========================
+           ACTION BUTTONS
+           ========================= */
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+
+        .apply-button {
+            padding: 14px 28px;
+
+            background: #4f46e5;
+            color: white;
+
+            border: none;
+            border-radius: 10px;
+
+            font-size: 15px;
+            font-weight: 700;
+
+            cursor: pointer;
+
+            text-decoration: none;
+
+            transition: all 0.25s ease;
+        }
+
+
+        .apply-button:hover {
+            background: #4338ca;
+            transform: translateY(-2px);
+        }
+
+
+        .back-button {
+            padding: 14px 28px;
+
+            background: #64748b;
+            color: white;
+
+            border: none;
+            border-radius: 10px;
+
+            font-size: 15px;
+            font-weight: 700;
+
+            cursor: pointer;
+
+            text-decoration: none;
+
+            transition: all 0.25s ease;
+        }
+
+
+        .back-button:hover {
+            background: #475569;
+        }
+
+
+        /* =========================
+           FOOTER
+           ========================= */
+
+        .footer {
+            text-align: center;
+
+            margin-top: 35px;
+
+            color: #94a3b8;
+
+            font-size: 12px;
+        }
+
+
+        /* =========================
+           MOBILE
+           ========================= */
+
+        @media (max-width: 700px) {
+
+            .navbar {
+                padding: 0 20px;
+            }
+
+            .nav-badge {
+                display: none;
+            }
+
+            .container {
+                margin: 30px auto;
+                padding: 0 15px;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+
+            .title-section h1 {
+                font-size: 30px;
+            }
+
+            .scheme-header {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .scheme-title h1 {
+                font-size: 24px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .apply-button,
+            .back-button {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<!-- Animated Background -->
+
+<div class="background">
+
+    <div class="blob blob-one"></div>
+    <div class="blob blob-two"></div>
+    <div class="blob blob-three"></div>
+
+</div>
+
+
+<!-- Navigation -->
+
+<nav class="navbar">
+
+    <div class="logo">
+
+        <span class="logo-main">Gig</span><span class="logo-second">Saathi</span>
+
+    </div>
+
+    <div class="nav-badge">
+        Scheme Details
+    </div>
+
+</nav>
+
+
+<!-- Main -->
+
+<div class="container">
+
+
+    <!-- Header -->
+
+    <div class="page-header">
+
+        <div class="title-section">
+
+            <h1>
+                Scheme Details
+            </h1>
+
+            <p>
+                Detailed information about government welfare schemes
+            </p>
+
+        </div>
+
+
+        <div class="button-group">
+
+            <a href="/schemes" class="nav-button">
+                Back to Schemes
+            </a>
+
+            <a href="/dashboard" class="nav-button">
+                Dashboard
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- Scheme Card -->
+
+    <div class="scheme-card">
+
+
+        <!-- Scheme Header -->
+
+        <div class="scheme-header">
+
+            <div class="scheme-title">
+
+                <h1 th:text="${scheme.name}">
+                    Scheme Name
+                </h1>
+
+                <div class="scheme-meta">
+
+                    <div class="scheme-badge badge-central" 
+                         th:if="${scheme.governmentLevel != null && scheme.governmentLevel.equalsIgnoreCase('CENTRAL')}">
+                        Central Government
+                    </div>
+
+                    <div class="scheme-badge badge-state" 
+                         th:if="${scheme.governmentLevel != null && scheme.governmentLevel.equalsIgnoreCase('STATE')}">
+                        State Government
+                    </div>
+
+                    <div class="scheme-badge badge-category" 
+                         th:if="${scheme.category != null}">
+                        <span th:text="${scheme.category}">Pension</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Scheme Content -->
+
+        <div class="scheme-content">
+
+
+            <!-- Description -->
+
+            <div class="section" th:if="${scheme.description != null}">
+
+                <h3>
+                    Description
+                </h3>
+
+                <p th:text="${scheme.description}">
+                    Scheme description goes here
+                </p>
+
+            </div>
+
+
+            <!-- Ministry -->
+
+            <div class="section" th:if="${scheme.ministry != null}">
+
+                <h3>
+                    Ministry
+                </h3>
+
+                <p th:text="${scheme.ministry}">
+                    Ministry name
+                </p>
+
+            </div>
+
+
+            <!-- Eligibility -->
+
+            <div class="section">
+
+                <h3>
+                    Eligibility Criteria
+                </h3>
+
+                <div class="eligibility-card">
+
+                    <div class="eligibility-item" th:if="${scheme.minAge != null || scheme.maxAge != null}">
+
+                        <div class="eligibility-label">
+                            Age Range
+                        </div>
+
+                        <div class="eligibility-value">
+                            <span th:text="${scheme.minAge != null ? scheme.minAge : 'Not specified'}">18</span>
+                            to
+                            <span th:text="${scheme.maxAge != null ? scheme.maxAge : 'Not specified'}">65</span>
+                            years
+                        </div>
+
+                    </div>
+
+                    <div class="eligibility-item" th:if="${scheme.minMonthlyEarning != null || scheme.maxMonthlyEarning != null}">
+
+                        <div class="eligibility-label">
+                            Income Range
+                        </div>
+
+                        <div class="eligibility-value">
+                            ₹<span th:text="${scheme.minMonthlyEarning != null ? scheme.minMonthlyEarning : '0'}">0</span>
+                            to
+                            ₹<span th:text="${scheme.maxMonthlyEarning != null ? scheme.maxMonthlyEarning : 'Not specified'}">25000</span>
+                            per month
+                        </div>
+
+                    </div>
+
+                    <div class="eligibility-item" th:if="${scheme.genderEligibility != null}">
+
+                        <div class="eligibility-label">
+                            Gender
+                        </div>
+
+                        <div class="eligibility-value" th:text="${scheme.genderEligibility}">
+                            All
+                        </div>
+
+                    </div>
+
+                    <div class="eligibility-item" th:if="${scheme.occupationEligibility != null}">
+
+                        <div class="eligibility-label">
+                            Occupation
+                        </div>
+
+                        <div class="eligibility-value" th:text="${scheme.occupationEligibility}">
+                            Gig Workers
+                        </div>
+
+                    </div>
+
+                    <div class="eligibility-item" th:if="${scheme.workerType != null}">
+
+                        <div class="eligibility-label">
+                            Worker Type
+                        </div>
+
+                        <div class="eligibility-value" th:text="${scheme.workerType}">
+                            Unorganized Sector
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div th:if="${scheme.eligibilityCriteria != null}">
+
+                    <h4 style="margin-top: 16px; margin-bottom: 8px; font-size: 16px; font-weight: 600; color: #1e293b;">
+                        Additional Eligibility Conditions
+                    </h4>
+
+                    <p th:text="${scheme.eligibilityCriteria}">
+                        Additional eligibility conditions
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- Benefits -->
+
+            <div class="section" th:if="${scheme.benefits != null}">
+
+                <h3>
+                    Benefits
+                </h3>
+
+                <p th:text="${scheme.benefits}">
+                    Scheme benefits
+                </p>
+
+            </div>
+
+
+            <!-- Required Documents -->
+
+            <div class="section" th:if="${scheme.requiredDocuments != null}">
+
+                <h3>
+                    Required Documents
+                </h3>
+
+                <p th:text="${scheme.requiredDocuments}">
+                    Documents required
+                </p>
+
+            </div>
+
+
+            <!-- Application Process -->
+
+            <div class="section" th:if="${scheme.applicationProcess != null}">
+
+                <h3>
+                    Application Process
+                </h3>
+
+                <p th:text="${scheme.applicationProcess}">
+                    How to apply
+                </p>
+
+            </div>
+
+
+            <!-- Contact Information -->
+
+            <div class="section">
+
+                <h3>
+                    Contact Information
+                </h3>
+
+                <div class="eligibility-card">
+
+                    <div class="eligibility-item" th:if="${scheme.officialWebsite != null}">
+
+                        <div class="eligibility-label">
+                            Official Website
+                        </div>
+
+                        <div class="eligibility-value">
+                            <a th:href="${scheme.officialWebsite}" 
+                               target="_blank" 
+                               style="color: #4f46e5; text-decoration: none;"
+                               th:text="${scheme.officialWebsite}">
+                                Official Website
+                            </a>
+                        </div>
+
+                    </div>
+
+                    <div class="eligibility-item" th:if="${scheme.helpline != null}">
+
+                        <div class="eligibility-label">
+                            Helpline
+                        </div>
+
+                        <div class="eligibility-value" th:text="${scheme.helpline}">
+                            Helpline number
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Action Buttons -->
+
+            <div class="action-buttons">
+
+                <a th:if="${scheme.officialWebsite != null}" 
+                   th:href="${scheme.officialWebsite}" 
+                   target="_blank"
+                   class="apply-button">
+                    Apply / Official Website
+                </a>
+
+                <a href="/schemes" class="back-button">
+                    Back to Schemes
+                </a>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+    <!-- Footer -->
+
+    <div class="footer">
+
+        © 2026 GigSaathi · Connecting People, Creating Opportunities
+
+    </div>
+
+
+</div>
+
+</body>
+
+</html>
