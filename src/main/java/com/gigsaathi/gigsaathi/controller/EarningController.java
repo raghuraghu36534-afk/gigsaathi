@@ -61,7 +61,8 @@ public class EarningController {
         // Create a new earning object to avoid optimistic locking issues
         Earning newEarning = new Earning();
         newEarning.setAmount(earning.getAmount());
-        newEarning.setPlatform(earning.getPlatform());
+        newEarning.setSource(earning.getSource());
+        newEarning.setDescription(earning.getDescription());
         newEarning.setDate(earning.getDate());
         newEarning.setUser(user);
         

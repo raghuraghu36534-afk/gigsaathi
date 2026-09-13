@@ -4,11 +4,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <meta name="theme-color" content="#667eea">
+    <link rel="manifest" href="/manifest.json">
     <title>GigSaathi - Dashboard</title>
-
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function (registration) {
+                        console.log('Service Worker registered with scope:', registration.scope);
+                    })
+                    .catch(function (error) {
+                        console.error('Service Worker registration failed:', error);
+                    });
+            });
+        }
+    </script>
     <style>
-
         * {
             box-sizing: border-box;
             margin: 0;
@@ -16,741 +28,1057 @@
         }
 
         body {
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             min-height: 100vh;
-            background: #eef2ff;
-            color: #172033;
+            background: #f0f4f8;
+            color: #1e293b;
             overflow-x: hidden;
         }
 
         /* =========================
-           ANIMATED BACKGROUND
+           DASHBOARD LAYOUT
            ========================= */
 
-        .background {
-            position: fixed;
-            inset: 0;
-            overflow: hidden;
-            z-index: -1;
-            background:
-                    radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.20), transparent 30%),
-                    radial-gradient(circle at 90% 80%, rgba(14, 165, 233, 0.18), transparent 30%),
-                    #f8fafc;
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
         }
-
-        .blob {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(2px);
-            opacity: 0.35;
-            animation: float 8s ease-in-out infinite;
-        }
-
-        .blob-one {
-            width: 260px;
-            height: 260px;
-            background: #818cf8;
-            top: -80px;
-            left: -80px;
-        }
-
-        .blob-two {
-            width: 220px;
-            height: 220px;
-            background: #38bdf8;
-            bottom: -60px;
-            right: -50px;
-            animation-delay: 2s;
-        }
-
-        .blob-three {
-            width: 140px;
-            height: 140px;
-            background: #a78bfa;
-            top: 45%;
-            right: 10%;
-            animation-delay: 4s;
-        }
-
-        @keyframes float {
-
-            0%, 100% {
-                transform: translateY(0) scale(1);
-            }
-
-            50% {
-                transform: translateY(-25px) scale(1.05);
-            }
-        }
-
 
         /* =========================
-           NAVBAR
+           SIDEBAR
            ========================= */
 
-        .navbar {
-            height: 72px;
-            background: rgba(255, 255, 255, 0.78);
-            backdrop-filter: blur(15px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.7);
-
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-
-            padding: 0 7%;
-
-            position: sticky;
-            top: 0;
-            z-index: 10;
-
-            animation: slideDown 0.7s ease;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
         }
 
-        @keyframes slideDown {
-
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-
-        .logo {
-            font-size: 26px;
+        .sidebar-logo {
+            font-size: 24px;
             font-weight: 800;
             letter-spacing: -1px;
         }
 
-        .logo-main {
-            color: #4f46e5;
+        .sidebar-logo-main {
+            color: #ffffff;
         }
 
-        .logo-second {
-            color: #111827;
+        .sidebar-logo-second {
+            color: #e0e7ff;
         }
 
+        .sidebar-nav {
+            padding: 20px 0;
+            flex: 1;
+        }
 
-        .nav-badge {
-            padding: 8px 14px;
-            border-radius: 30px;
+        .nav-item {
+            padding: 14px 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+            font-weight: 500;
+            border-left: 3px solid transparent;
+        }
 
-            background: rgba(79, 70, 229, 0.08);
-            color: #4f46e5;
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: #ffffff;
+        }
 
-            font-size: 13px;
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.15);
+            border-left-color: #ffffff;
             font-weight: 600;
         }
 
-
-        /* =========================
-           MAIN
-           ========================= */
-
-        .container {
-            max-width: 1150px;
-            margin: 55px auto;
-            padding: 0 25px;
-
-            animation: pageAppear 0.9s ease;
+        .nav-icon {
+            font-size: 18px;
         }
 
-        @keyframes pageAppear {
+        .sidebar-footer {
+            padding: 20px 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
 
+        .user-info-sidebar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .user-avatar-sidebar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .user-name-sidebar {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* =========================
+           MAIN CONTENT
+           ========================= */
+
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 0;
+        }
+
+        .top-bar {
+            background: white;
+            padding: 20px 32px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .top-bar h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .top-bar-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .content-area {
+            padding: 32px;
+            min-height: calc(100vh - 80px);
+        }
+
+        /* =========================
+           DASHBOARD SECTIONS
+           ========================= */
+
+        .dashboard-section {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .dashboard-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(25px);
+                transform: translateY(10px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
 
-
         /* =========================
-           HEADER
+           CARDS
            ========================= */
 
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-
-            margin-bottom: 35px;
-        }
-
-
-        .title-section h1 {
-            font-size: 38px;
-            font-weight: 800;
-            letter-spacing: -1.5px;
-
-            margin-bottom: 8px;
-        }
-
-
-        .title-section p {
-            color: #64748b;
-            font-size: 15px;
-        }
-
-
-        /* =========================
-           BUTTONS
-           ========================= */
-
-        .button-group {
-            display: flex;
-            gap: 12px;
-        }
-
-
-        .nav-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-
-            background: rgba(255, 255, 255, 0.8);
-            color: #4f46e5;
-
-            padding: 10px 16px;
-
-            border-radius: 10px;
-
-            text-decoration: none;
-
-            font-size: 13px;
-            font-weight: 600;
-
-            border: 1px solid rgba(79, 70, 229, 0.2);
-
-            transition: all 0.25s ease;
-        }
-
-
-        .nav-button:hover {
-            background: rgba(79, 70, 229, 0.1);
-            border-color: rgba(79, 70, 229, 0.4);
-        }
-
-
-        .logout-button {
-            background: #64748b;
-            color: white;
-            padding: 13px 20px;
-            border-radius: 12px;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 700;
-            border: none;
-            cursor: pointer;
-        }
-
-
-        /* =========================
-           CARD
-           ========================= */
-
-        .card {
-            background: rgba(255, 255, 255, 0.82);
-            backdrop-filter: blur(15px);
-
-            border: 1px solid rgba(255, 255, 255, 0.9);
-
-            border-radius: 20px;
-
-            overflow: hidden;
-
-            box-shadow:
-                    0 20px 50px rgba(15, 23, 42, 0.08);
-
-            animation: cardAppear 1s ease;
-        }
-
-
-        @keyframes cardAppear {
-
-            from {
-                opacity: 0;
-                transform: scale(0.97);
-            }
-
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-
-        .card-header {
-            padding: 22px 28px;
-
-            border-bottom: 1px solid #e5e7eb;
-
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-
-        .card-header h2 {
-            font-size: 18px;
-        }
-
-
-        /* =========================
-           USER INFO
-           ========================= */
-
-        .user-info {
-            padding: 30px 28px;
-
-            display: flex;
-            align-items: center;
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 20px;
-
-            border-bottom: 1px solid #f1f5f9;
+            margin-bottom: 32px;
         }
 
-
-        .avatar {
-            width: 60px;
-            height: 60px;
-
+        .stat-card {
+            background: white;
+            padding: 24px;
             border-radius: 16px;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            background: #4f46e5;
-
-            color: white;
-
-            font-weight: 800;
-            font-size: 20px;
-
-            box-shadow: 0 5px 12px rgba(79, 70, 229, 0.2);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
         }
 
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
+        }
 
-        .user-details h3 {
-            font-size: 20px;
+        .stat-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .stat-value {
+            font-size: 28px;
             font-weight: 700;
             color: #1e293b;
             margin-bottom: 4px;
         }
 
-
-        .user-details p {
+        .stat-label {
             color: #64748b;
             font-size: 14px;
         }
 
-
         /* =========================
-           SCHEMES LIST
+           TABLES
            ========================= */
 
-        .schemes-list {
-            padding: 0 28px 30px 28px;
+        .data-table {
+            width: 100%;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
 
-
-        .scheme-item {
-            padding: 20px;
-
-            border: 1px solid #e2e8f0;
-
-            border-radius: 12px;
-
-            margin-bottom: 16px;
-
-            background: rgba(255, 255, 255, 0.5);
-
-            transition: all 0.25s ease;
+        .data-table thead {
+            background: #f8fafc;
         }
 
-
-        .scheme-item:hover {
-            border-color: #4f46e5;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
+        .data-table th {
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #475569;
+            font-size: 14px;
+            border-bottom: 1px solid #e2e8f0;
         }
 
+        .data-table td {
+            padding: 16px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #64748b;
+            font-size: 14px;
+        }
 
-        .scheme-name {
+        .data-table tr:hover {
+            background: #f8fafc;
+        }
+
+        /* =========================
+           FORMS
+           ========================= */
+
+        .form-container {
+            background: white;
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            max-width: 600px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #475569;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        /* =========================
+           SCHEME CARDS
+           ========================= */
+
+        .schemes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .scheme-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .scheme-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .scheme-card h3 {
             font-size: 18px;
             font-weight: 700;
             color: #1e293b;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
         }
 
-
-        .scheme-description {
+        .scheme-card p {
             color: #64748b;
             font-size: 14px;
-            margin-bottom: 12px;
             line-height: 1.5;
-        }
-
-
-        .scheme-requirements {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-
-        .requirement {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-
-            padding: 6px 12px;
-
-            border-radius: 20px;
-
-            background: #f1f5f9;
-
-            color: #475569;
-
-            font-size: 12px;
-
-            font-weight: 600;
-        }
-
-
-        .view-button {
-            padding: 8px 16px;
-
-            background: #4f46e5;
-            color: white;
-
-            border: none;
-            border-radius: 8px;
-
-            font-size: 13px;
-            font-weight: 600;
-
-            cursor: pointer;
-
-            text-decoration: none;
-
-            transition: all 0.25s ease;
-        }
-
-
-        .view-button:hover {
-            background: #4338ca;
-        }
-
-
-        /* =========================
-           EMPTY STATE
-           ========================= */
-
-        .empty-state {
-            padding: 60px 28px;
-
-            text-align: center;
-        }
-
-
-        .empty-state-icon {
-            font-size: 48px;
             margin-bottom: 16px;
         }
 
-
-        .empty-state h3 {
-            font-size: 20px;
-            font-weight: 700;
-            color: #64748b;
-            margin-bottom: 8px;
+        .scheme-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #e0e7ff;
+            color: #4f46e5;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 12px;
         }
 
+        /* =========================
+           QUICK ACTIONS
+           ========================= */
 
-        .empty-state p {
-            color: #94a3b8;
+        .quick-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 12px 20px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        /* =========================
+           PROFILE SECTION
+           ========================= */
+
+        .profile-card {
+            background: white;
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            max-width: 600px;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .profile-info h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .profile-info p {
+            color: #64748b;
             font-size: 14px;
         }
 
+        .profile-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
 
-        /* =========================
-           FOOTER
-           ========================= */
+        .detail-item {
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
 
-        .footer {
-            text-align: center;
-
-            margin-top: 35px;
-
-            color: #94a3b8;
-
+        .detail-label {
             font-size: 12px;
+            color: #64748b;
+            margin-bottom: 4px;
         }
 
+        .detail-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+        }
 
         /* =========================
-           MOBILE
+           MOBILE RESPONSIVE
            ========================= */
 
-        @media (max-width: 700px) {
-
-            .navbar {
-                padding: 0 20px;
-            }
-
-            .nav-badge {
-                display: none;
-            }
-
-            .container {
-                margin: 30px auto;
-                padding: 0 15px;
-            }
-
-            .page-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 20px;
-            }
-
-            .title-section h1 {
-                font-size: 30px;
-            }
-
-            .button-group {
-                flex-direction: column;
+        @media (max-width: 768px) {
+            .sidebar {
                 width: 100%;
+                height: auto;
+                position: relative;
             }
 
-            .nav-button,
-            .logout-button {
-                width: 100%;
-                justify-content: center;
+            .main-content {
+                margin-left: 0;
+            }
+
+            .sidebar-nav {
+                display: flex;
+                overflow-x: auto;
+                padding: 10px;
+            }
+
+            .nav-item {
+                padding: 10px 16px;
+                white-space: nowrap;
+                border-left: none;
+                border-bottom: 3px solid transparent;
+            }
+
+            .nav-item:hover,
+            .nav-item.active {
+                border-left: none;
+                border-bottom-color: #ffffff;
+            }
+
+            .content-area {
+                padding: 16px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-details {
+                grid-template-columns: 1fr;
             }
         }
-
     </style>
-
 </head>
 
-
 <body>
-
-<!-- Animated Background -->
-
-<div class="background">
-
-    <div class="blob blob-one"></div>
-    <div class="blob blob-two"></div>
-    <div class="blob blob-three"></div>
-
-</div>
-
-
-<!-- Navigation -->
-
-<nav class="navbar">
-
-    <div class="logo">
-
-        <span class="logo-main">Gig</span><span class="logo-second">Saathi</span>
-
-    </div>
-
-    <div class="nav-badge">
-        Dashboard
-    </div>
-
-</nav>
-
-
-<!-- Main -->
-
-<div class="container">
-
-
-    <!-- Header -->
-
-    <div class="page-header">
-
-        <div class="title-section">
-
-            <h1>
-                Welcome, <span th:text="${user.name}">User</span>!
-            </h1>
-
-            <p>
-                Your personalized welfare scheme recommendations
-            </p>
-
-        </div>
-
-
-        <div class="button-group">
-
-            <a href="/users" class="nav-button">
-                Back to Users
-            </a>
-
-            <a th:href="@{/users/{id}/earnings(id=${user.id})}" class="nav-button">
-                Manage Earnings
-            </a>
-
-            <a href="/schemes" class="nav-button">
-                Government Schemes
-            </a>
-
-            <form th:action="@{/logout}" method="post" style="display: inline;">
-
-                <button type="submit" class="logout-button">
-                    Logout
-                </button>
-
-            </form>
-
-        </div>
-
-    </div>
-
-
-    <!-- Card -->
-
-    <div class="card">
-
-
-        <div class="card-header">
-
-            <h2>
-                Your Profile
-            </h2>
-
-
-            <div style="font-size: 12px; color: #64748b;">
-                Based on your gig income
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <span class="sidebar-logo-main">Gig</span><span class="sidebar-logo-second">Saathi</span>
+                </div>
             </div>
 
+            <div class="sidebar-nav">
+                <div class="nav-item active" onclick="showSection('overview')">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </div>
+                <div class="nav-item" onclick="showSection('earnings')">
+                    <span class="nav-icon">💰</span>
+                    <span>Earnings</span>
+                </div>
+                <div class="nav-item" onclick="showSection('schemes')">
+                    <span class="nav-icon">🏛️</span>
+                    <span>Government Schemes</span>
+                </div>
+                <div class="nav-item" onclick="showSection('my-schemes')">
+                    <span class="nav-icon">⭐</span>
+                    <span>My Schemes</span>
+                </div>
+                <div class="nav-item" onclick="showSection('profile')">
+                    <span class="nav-icon">👤</span>
+                    <span>Profile</span>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="user-info-sidebar">
+                    <div class="user-avatar-sidebar" th:text="${#strings.substring(user.name, 0, 1).toUpperCase()}">U</div>
+                    <div class="user-name-sidebar" th:text="${user.name}">User</div>
+                </div>
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="logout-btn">Logout</button>
+                </form>
+            </div>
         </div>
 
-
-        <!-- User Info -->
-
-        <div class="user-info">
-
-            <div class="avatar"
-                 th:text="${#strings.substring(user.name, 0, 1).toUpperCase()}">
-                U
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="top-bar">
+                <h1>Gig Worker Welfare Dashboard</h1>
+                <div class="top-bar-info">
+                    <span>Welcome, <strong th:text="${user.name}">User</strong></span>
+                </div>
             </div>
 
-            <div class="user-details">
+            <div class="content-area">
+                <!-- Overview Section -->
+                <div id="overview" class="dashboard-section active">
+                    <div class="quick-actions">
+                        <button class="action-btn" onclick="showSection('add-earning')">
+                            <span>➕</span> Add Earnings
+                        </button>
+                        <button class="action-btn" onclick="showSection('schemes')">
+                            <span>🏛️</span> Government Schemes
+                        </button>
+                        <button class="action-btn" onclick="showSection('my-schemes')">
+                            <span>⭐</span> My Schemes
+                        </button>
+                    </div>
 
-                <h3 th:text="${user.name}">
-                    User Name
-                </h3>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">💰</div>
+                            <div class="stat-value" id="total-earnings">₹0</div>
+                            <div class="stat-label">Total Earnings</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📅</div>
+                            <div class="stat-value" id="month-earnings">₹0</div>
+                            <div class="stat-label">This Month</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🏛️</div>
+                            <div class="stat-value" id="total-schemes">14</div>
+                            <div class="stat-label">Available Schemes</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">⭐</div>
+                            <div class="stat-value" id="my-schemes-count">0</div>
+                            <div class="stat-label">My Schemes</div>
+                        </div>
+                    </div>
 
-                <p>
-                    Age: <span th:text="${user.age}">25</span> | 
-                    State: <span th:text="${user.state}">Maharashtra</span>
-                </p>
+                    <h3 style="margin-bottom: 16px; font-size: 20px; font-weight: 700;">Recent Earnings</h3>
+                    <div id="recent-earnings-container">
+                        <!-- Recent earnings will be loaded here -->
+                    </div>
 
-            </div>
-
-        </div>
-
-
-        <!-- Schemes List -->
-
-        <div class="schemes-list">
-
-            <div th:if="${#lists.isEmpty(eligibleSchemes)}" class="empty-state">
-
-                <div class="empty-state-icon">🔍</div>
-
-                <h3>
-                    No matching schemes yet
-                </h3>
-
-                <p>
-                    Try adding more earnings or check back later for updated scheme eligibility
-                </p>
-
-            </div>
-
-            <div th:each="scheme : ${eligibleSchemes}" class="scheme-item">
-
-                <div class="scheme-name" th:text="${scheme.name}">
-                    Scheme Name
+                    <h3 style="margin: 32px 0 16px; font-size: 20px; font-weight: 700;">Recommended Schemes</h3>
+                    <div id="recommended-schemes-container">
+                        <!-- Recommended schemes will be loaded here -->
+                    </div>
                 </div>
 
-                <div class="scheme-description" th:text="${scheme.description}">
-                    Scheme description goes here
+                <!-- Earnings Section -->
+                <div id="earnings" class="dashboard-section">
+                    <div class="quick-actions">
+                        <button class="action-btn" onclick="showSection('add-earning')">
+                            <span>➕</span> Add Earnings
+                        </button>
+                    </div>
+
+                    <h3 style="margin-bottom: 16px; font-size: 20px; font-weight: 700;">Earnings History</h3>
+                    <div id="earnings-table-container">
+                        <!-- Earnings table will be loaded here -->
+                    </div>
                 </div>
 
-                <div class="scheme-requirements">
-
-                    <div class="requirement" th:if="${scheme.minAge != null}">
-                        Age: <span th:text="${scheme.minAge}">18</span>-<span th:text="${scheme.maxAge}">65</span>
+                <!-- Add Earning Section -->
+                <div id="add-earning" class="dashboard-section">
+                    <div class="form-container">
+                        <h3 style="margin-bottom: 24px; font-size: 20px; font-weight: 700;">Add Earning</h3>
+                        <form id="add-earning-form">
+                            <div class="form-group">
+                                <label>Amount (₹)</label>
+                                <input type="number" id="earning-amount" required min="0" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label>Date</label>
+                                <input type="date" id="earning-date" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Source/Platform</label>
+                                <input type="text" id="earning-source" placeholder="e.g., Uber, Swiggy, Zomato" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Description</label>
+                                <textarea id="earning-description" rows="3" placeholder="Brief description of the earning"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Earning</button>
+                            <button type="button" class="btn btn-secondary" onclick="showSection('earnings')">Cancel</button>
+                        </form>
                     </div>
-
-                    <div class="requirement" th:if="${scheme.minMonthlyEarning != null}">
-                        Income: ₹<span th:text="${scheme.minMonthlyEarning}">0</span>-<span th:text="${scheme.maxMonthlyEarning}">25000</span>
-                    </div>
-
-                    <div class="requirement" th:if="${scheme.category != null}">
-                        <span th:text="${scheme.category}">Pension</span>
-                    </div>
-
-                    <div class="requirement" th:if="${scheme.state != null && !scheme.state.equalsIgnoreCase('all')}">
-                        State: <span th:text="${scheme.state}">Maharashtra</span>
-                    </div>
-
                 </div>
 
+                <!-- Government Schemes Section -->
+                <div id="schemes" class="dashboard-section">
+                    <div class="form-container" style="max-width: 100%; margin-bottom: 24px;">
+                        <h3 style="margin-bottom: 16px; font-size: 20px; font-weight: 700;">Search Government Schemes</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px;">
+                            <div class="form-group">
+                                <label>Age</label>
+                                <select id="scheme-age">
+                                    <option value="">Select Age</option>
+                                    <option th:each="i : ${#numbers.sequence(1, 100)}" th:value="${i}" th:text="${i}"></option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>State</label>
+                                <select id="scheme-state">
+                                    <option value="">Select State</option>
+                                    <option value="ANDHRA_PRADESH">Andhra Pradesh</option>
+                                    <option value="KARNATAKA">Karnataka</option>
+                                    <option value="MAHARASHTRA">Maharashtra</option>
+                                    <option value="TAMIL_NADU">Tamil Nadu</option>
+                                    <option value="TELANGANA">Telangana</option>
+                                    <option value="KERALA">Kerala</option>
+                                    <option value="GUJARAT">Gujarat</option>
+                                    <option value="RAJASTHAN">Rajasthan</option>
+                                    <option value="UTTAR_PRADESH">Uttar Pradesh</option>
+                                    <option value="WEST_BENGAL">West Bengal</option>
+                                </select>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="searchSchemes()">Search</button>
+                        </div>
+                    </div>
+
+                    <div id="schemes-container">
+                        <!-- Schemes will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- My Schemes Section -->
+                <div id="my-schemes" class="dashboard-section">
+                    <h3 style="margin-bottom: 16px; font-size: 20px; font-weight: 700;">My Eligible Schemes</h3>
+                    <div id="my-schemes-container">
+                        <!-- User's schemes will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Profile Section -->
+                <div id="profile" class="dashboard-section">
+                    <div class="profile-card">
+                        <div class="profile-header">
+                            <div class="profile-avatar" th:text="${#strings.substring(user.name, 0, 1).toUpperCase()}">U</div>
+                            <div class="profile-info">
+                                <h2 th:text="${user.name}">User Name</h2>
+                                <p th:text="${user.phoneNumber}">Phone Number</p>
+                            </div>
+                        </div>
+                        <div class="profile-details">
+                            <div class="detail-item">
+                                <div class="detail-label">Age</div>
+                                <div class="detail-value" th:text="${user.age}">25</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">State</div>
+                                <div class="detail-value" th:text="${user.state}">Karnataka</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Phone Number</div>
+                                <div class="detail-value" th:text="${user.phoneNumber}">1234567890</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Member Since</div>
+                                <div class="detail-value">2026</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-            <!-- Government Schemes Promotion -->
-
-            <div style="margin-top: 30px; padding: 20px; background: #f0f9ff; border-radius: 12px; border: 1px solid #bae6fd;">
-
-                <h3 style="font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 12px;">
-                    🏛️ Explore More Government Schemes
-                </h3>
-
-                <p style="color: #64748b; font-size: 14px; margin-bottom: 16px;">
-                    Discover hundreds of Central and State government welfare schemes you may be eligible for.
-                </p>
-
-                <a href="/schemes" class="view-button" style="display: inline-block;">
-                    Browse All Schemes
-                </a>
-
-            </div>
-
         </div>
-
     </div>
 
+    <script th:inline="javascript">
+        // User data from server
+        const userData = {
+            id: [[${user.id}]],
+            name: [[${user.name}]],
+            phoneNumber: [[${user.phoneNumber}]],
+            age: [[${user.age}]],
+            state: [[${user.state}]]
+        };
 
-    <!-- Footer -->
+        // Eligible schemes from server
+        const eligibleSchemes = [[${eligibleSchemes}]];
 
-    <div class="footer">
+        // Section switching
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.dashboard-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Update nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Find and activate the corresponding nav item
+            const navItems = document.querySelectorAll('.nav-item');
+            const sectionNames = ['overview', 'earnings', 'schemes', 'my-schemes', 'profile'];
+            const navIndex = sectionNames.indexOf(sectionId);
+            if (navIndex !== -1 && navItems[navIndex]) {
+                navItems[navIndex].classList.add('active');
+            }
 
-        © 2026 GigSaathi · Connecting People, Creating Opportunities
+            // Load data for specific sections
+            if (sectionId === 'overview') {
+                loadOverviewData();
+            } else if (sectionId === 'earnings') {
+                loadEarnings();
+            } else if (sectionId === 'schemes') {
+                loadAllSchemes();
+            } else if (sectionId === 'my-schemes') {
+                loadMySchemes();
+            }
+        }
 
-    </div>
+        // Load overview data
+        function loadOverviewData() {
+            loadEarningsSummary();
+            loadRecentEarnings();
+            loadRecommendedSchemes();
+        }
 
+        // Load earnings summary
+        async function loadEarningsSummary() {
+            try {
+                const response = await fetch(`/api/earnings/summary/${userData.id}`);
+                const data = await response.json();
+                
+                document.getElementById('total-earnings').textContent = '₹' + (data.totalEarnings || 0);
+                document.getElementById('month-earnings').textContent = '₹' + (data.monthEarnings || 0);
+            } catch (error) {
+                console.error('Error loading earnings summary:', error);
+            }
+        }
 
-</div>
+        // Load recent earnings
+        async function loadRecentEarnings() {
+            try {
+                const response = await fetch(`/api/earnings/recent/${userData.id}`);
+                const earnings = await response.json();
+                
+                const container = document.getElementById('recent-earnings-container');
+                if (earnings.length === 0) {
+                    container.innerHTML = '<p style="color: #64748b; padding: 20px;">No recent earnings</p>';
+                    return;
+                }
 
+                let html = '<table class="data-table"><thead><tr><th>Amount</th><th>Date</th><th>Source</th><th>Description</th></tr></thead><tbody>';
+                earnings.slice(0, 5).forEach(earning => {
+                    html += `<tr>
+                        <td>₹${earning.amount}</td>
+                        <td>${earning.date}</td>
+                        <td>${earning.source}</td>
+                        <td>${earning.description || '-'}</td>
+                    </tr>`;
+                });
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading recent earnings:', error);
+            }
+        }
+
+        // Load recommended schemes
+        function loadRecommendedSchemes() {
+            const container = document.getElementById('recommended-schemes-container');
+            document.getElementById('total-schemes').textContent = eligibleSchemes.length;
+            document.getElementById('my-schemes-count').textContent = eligibleSchemes.length;
+
+            if (eligibleSchemes.length === 0) {
+                container.innerHTML = '<p style="color: #64748b; padding: 20px;">No schemes found matching your profile</p>';
+                return;
+            }
+
+            let html = '<div class="schemes-grid">';
+            eligibleSchemes.slice(0, 3).forEach(scheme => {
+                html += `<div class="scheme-card">
+                    <span class="scheme-badge">${scheme.category || 'General'}</span>
+                    <h3>${scheme.name}</h3>
+                    <p>${scheme.description}</p>
+                </div>`;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Load all earnings
+        async function loadEarnings() {
+            try {
+                const response = await fetch(`/api/earnings/user/${userData.id}`);
+                const earnings = await response.json();
+                
+                const container = document.getElementById('earnings-table-container');
+                if (earnings.length === 0) {
+                    container.innerHTML = '<p style="color: #64748b; padding: 20px;">No earnings recorded</p>';
+                    return;
+                }
+
+                let html = '<table class="data-table"><thead><tr><th>Amount</th><th>Date</th><th>Source</th><th>Description</th></tr></thead><tbody>';
+                earnings.forEach(earning => {
+                    html += `<tr>
+                        <td>₹${earning.amount}</td>
+                        <td>${earning.date}</td>
+                        <td>${earning.source}</td>
+                        <td>${earning.description || '-'}</td>
+                    </tr>`;
+                });
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading earnings:', error);
+            }
+        }
+
+        // Load all schemes
+        async function loadAllSchemes() {
+            try {
+                const response = await fetch('/api/schemes/all');
+                const schemes = await response.json();
+                
+                const container = document.getElementById('schemes-container');
+                let html = '<div class="schemes-grid">';
+                schemes.forEach(scheme => {
+                    html += `<div class="scheme-card">
+                        <span class="scheme-badge">${scheme.category || 'General'}</span>
+                        <h3>${scheme.name}</h3>
+                        <p>${scheme.description}</p>
+                        <p><strong>Age:</strong> ${scheme.minAge || 'Any'} - ${scheme.maxAge || 'Any'}</p>
+                        <p><strong>State:</strong> ${scheme.state || 'All'}</p>
+                    </div>`;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading schemes:', error);
+            }
+        }
+
+        // Search schemes
+        async function searchSchemes() {
+            const age = document.getElementById('scheme-age').value;
+            const state = document.getElementById('scheme-state').value;
+
+            if (!age || !state) {
+                alert('Please select both age and state');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/schemes/search?age=${age}&state=${state}`);
+                const schemes = await response.json();
+                
+                const container = document.getElementById('schemes-container');
+                
+                const centralSchemes = schemes.filter(s => s.governmentLevel === 'CENTRAL' || s.state === 'ALL' || s.state === 'NATIONAL');
+                const stateSchemes = schemes.filter(s => s.governmentLevel === 'STATE' && s.state === state);
+
+                let html = '';
+                
+                if (centralSchemes.length > 0) {
+                    html += '<h3 style="margin: 20px 0 16px; font-size: 18px; font-weight: 700;">Central Government Schemes</h3>';
+                    html += '<div class="schemes-grid">';
+                    centralSchemes.forEach(scheme => {
+                        html += `<div class="scheme-card">
+                            <span class="scheme-badge">Central</span>
+                            <h3>${scheme.name}</h3>
+                            <p>${scheme.description}</p>
+                            <p><strong>Age:</strong> ${scheme.minAge || 'Any'} - ${scheme.maxAge || 'Any'}</p>
+                        </div>`;
+                    });
+                    html += '</div>';
+                }
+
+                if (stateSchemes.length > 0) {
+                    html += '<h3 style="margin: 20px 0 16px; font-size: 18px; font-weight: 700;">' + state.replace('_', ' ') + ' Government Schemes</h3>';
+                    html += '<div class="schemes-grid">';
+                    stateSchemes.forEach(scheme => {
+                        html += `<div class="scheme-card">
+                            <span class="scheme-badge">State</span>
+                            <h3>${scheme.name}</h3>
+                            <p>${scheme.description}</p>
+                            <p><strong>Age:</strong> ${scheme.minAge || 'Any'} - ${scheme.maxAge || 'Any'}</p>
+                        </div>`;
+                    });
+                    html += '</div>';
+                }
+
+                if (schemes.length === 0) {
+                    html = '<p style="color: #64748b; padding: 20px;">No schemes found matching your criteria</p>';
+                }
+
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error searching schemes:', error);
+            }
+        }
+
+        // Load my schemes
+        function loadMySchemes() {
+            const container = document.getElementById('my-schemes-container');
+            
+            if (eligibleSchemes.length === 0) {
+                container.innerHTML = '<p style="color: #64748b; padding: 20px;">No schemes found matching your profile. Try updating your profile information.</p>';
+                return;
+            }
+
+            let html = '<div class="schemes-grid">';
+            eligibleSchemes.forEach(scheme => {
+                html += `<div class="scheme-card">
+                    <span class="scheme-badge">${scheme.category || 'General'}</span>
+                    <h3>${scheme.name}</h3>
+                    <p>${scheme.description}</p>
+                    <p><strong>Age:</strong> ${scheme.minAge || 'Any'} - ${scheme.maxAge || 'Any'}</p>
+                    <p><strong>State:</strong> ${scheme.state || 'All'}</p>
+                </div>`;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Add earning form submission
+        document.getElementById('add-earning-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const earningData = {
+                amount: document.getElementById('earning-amount').value,
+                date: document.getElementById('earning-date').value,
+                source: document.getElementById('earning-source').value,
+                description: document.getElementById('earning-description').value,
+                userId: userData.id
+            };
+
+            try {
+                const response = await fetch('/api/earnings/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(earningData)
+                });
+
+                if (response.ok) {
+                    alert('Earning added successfully!');
+                    document.getElementById('add-earning-form').reset();
+                    showSection('earnings');
+                } else {
+                    alert('Error adding earning');
+                }
+            } catch (error) {
+                console.error('Error adding earning:', error);
+                alert('Error adding earning');
+            }
+        });
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadOverviewData();
+        });
+    </script>
 </body>
 
 </html>

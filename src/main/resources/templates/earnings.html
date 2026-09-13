@@ -4,8 +4,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#667eea">
+    <link rel="manifest" href="/manifest.json">
 
     <title>GigSaathi - Earnings</title>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function (registration) {
+                        console.log('Service Worker registered with scope:', registration.scope);
+                    })
+                    .catch(function (error) {
+                        console.error('Service Worker registration failed:', error);
+                    });
+            });
+        }
+    </script>
 
     <style>
 
@@ -467,7 +482,7 @@
         }
 
 
-        .platform {
+        .source {
             display: inline-flex;
             align-items: center;
             gap: 6px;
@@ -603,7 +618,7 @@
             </h1>
 
             <p>
-                Track your gig income across platforms
+                Track your gig income across sources
             </p>
 
         </div>
@@ -702,7 +717,11 @@
                 </th>
 
                 <th>
-                    Platform
+                    Source
+                </th>
+
+                <th>
+                    Description
                 </th>
 
                 <th>
@@ -725,8 +744,8 @@
 
                 <td>
 
-                    <span class="platform"
-                          th:text="${earning.platform}">
+                    <span class="source"
+                          th:text="${earning.source}">
                         Swiggy
                     </span>
 

@@ -25,7 +25,9 @@ public class Earning {
 
     private BigDecimal amount;
 
-    private String platform;
+    private String source;
+
+    private String description;
 
     private LocalDate date;
 

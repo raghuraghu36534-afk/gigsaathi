@@ -2,11 +2,13 @@ package com.gigsaathi.gigsaathi.controller;
 
 import com.gigsaathi.gigsaathi.model.User;
 import com.gigsaathi.gigsaathi.repository.UserRepository;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,7 +33,12 @@ public class RegistrationController {
     }
 
     @PostMapping("/register")
-    public String registerUser(@ModelAttribute User user) {
+    public String registerUser(@Valid @ModelAttribute User user, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            log.info("Validation errors during registration: {}", bindingResult.getAllErrors());
+            return "register";
+        }
+        
         log.info("Registering user: name={}, phone={}, age={}, state={}", 
                 user.getName(), user.getPhoneNumber(), user.getAge(), user.getState());
         

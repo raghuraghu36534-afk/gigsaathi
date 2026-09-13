@@ -37,13 +37,13 @@ public class SecurityConfig {
         http
             .userDetailsService((UserDetailsService) customUserDetailsService)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/register", "/login", "/css/**", "/js/**", "/images/**", "/schemes", "/schemes/search", "/schemes/**").permitAll()
-                .requestMatchers("/users/**", "/dashboard", "/schemes/my-schemes").authenticated()
+                .requestMatchers("/register", "/login", "/css/**", "/js/**", "/images/**", "/manifest.json", "/sw.js", "/icon-192.png", "/icon-512.png", "/health", "/schemes", "/schemes/**", "/.well-known/**").permitAll()
+                .requestMatchers("/api/**", "/users/**", "/dashboard").authenticated()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
                 .loginPage("/login")
-                .defaultSuccessUrl("/users", true)
+                .defaultSuccessUrl("/dashboard", true)
                 .permitAll()
             )
             .logout(logout -> logout

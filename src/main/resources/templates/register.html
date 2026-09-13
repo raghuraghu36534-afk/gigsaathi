@@ -4,8 +4,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#667eea">
+    <link rel="manifest" href="/manifest.json">
 
     <title>GigSaathi - Register</title>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function (registration) {
+                        console.log('Service Worker registered with scope:', registration.scope);
+                    })
+                    .catch(function (error) {
+                        console.error('Service Worker registration failed:', error);
+                    });
+            });
+        }
+    </script>
 
     <style>
 
@@ -527,6 +542,11 @@
                            th:field="*{name}"
                            placeholder="Enter your name"
                            required>
+                    
+                    <div th:if="${#fields.hasErrors('name')}" 
+                         style="color: #dc2626; font-size: 13px; margin-top: 6px;">
+                        <span th:errors="*{name}">Name is required</span>
+                    </div>
 
                 </div>
 
@@ -537,11 +557,18 @@
                         Phone Number
                     </label>
 
-                    <input type="text"
+                    <input type="tel"
                            id="phoneNumber"
                            th:field="*{phoneNumber}"
                            placeholder="Enter your phone number"
+                           maxlength="10"
+                           pattern="[6-9][0-9]{9}"
                            required>
+                    
+                    <div th:if="${#fields.hasErrors('phoneNumber')}" 
+                         style="color: #dc2626; font-size: 13px; margin-top: 6px;">
+                        <span th:errors="*{phoneNumber}">Enter a valid 10-digit Indian mobile number</span>
+                    </div>
 
                 </div>
 
@@ -557,6 +584,11 @@
                            th:field="*{password}"
                            placeholder="Create a password"
                            required>
+                    
+                    <div th:if="${#fields.hasErrors('password')}" 
+                         style="color: #dc2626; font-size: 13px; margin-top: 6px;">
+                        <span th:errors="*{password}">Password is required</span>
+                    </div>
 
                 </div>
 
@@ -571,9 +603,14 @@
                            id="age"
                            th:field="*{age}"
                            placeholder="Enter your age"
-                           min="18"
+                           min="1"
                            max="100"
                            required>
+                    
+                    <div th:if="${#fields.hasErrors('age')}" 
+                         style="color: #dc2626; font-size: 13px; margin-top: 6px;">
+                        <span th:errors="*{age}">Age must be between 1 and 100</span>
+                    </div>
 
                 </div>
 
@@ -589,6 +626,11 @@
                            th:field="*{state}"
                            placeholder="Enter your state"
                            required>
+                    
+                    <div th:if="${#fields.hasErrors('state')}" 
+                         style="color: #dc2626; font-size: 13px; margin-top: 6px;">
+                        <span th:errors="*{state}">State is required</span>
+                    </div>
 
                 </div>
 

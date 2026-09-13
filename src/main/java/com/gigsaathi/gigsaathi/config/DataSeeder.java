@@ -23,15 +23,18 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // Always clear and reseed for consistent testing
-        log.info("Clearing existing welfare schemes and reseeding with updated data...");
-        welfareSchemeRepository.deleteAll();
+        long existingCount = welfareSchemeRepository.count();
         
-        seedCentralGovernmentSchemes();
-        seedStateGovernmentSchemes();
-        
-        long count = welfareSchemeRepository.count();
-        log.info("Seeded {} welfare schemes successfully", count);
+        if (existingCount == 0) {
+            log.info("No existing welfare schemes found. Seeding initial data...");
+            seedCentralGovernmentSchemes();
+            seedStateGovernmentSchemes();
+            
+            long count = welfareSchemeRepository.count();
+            log.info("Seeded {} welfare schemes successfully", count);
+        } else {
+            log.info("Found {} existing welfare schemes. Skipping seed.", existingCount);
+        }
     }
 
     private void seedCentralGovernmentSchemes() {
