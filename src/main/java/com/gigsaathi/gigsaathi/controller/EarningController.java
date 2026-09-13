@@ -4,6 +4,7 @@ import com.gigsaathi.gigsaathi.model.Earning;
 import com.gigsaathi.gigsaathi.model.User;
 import com.gigsaathi.gigsaathi.repository.EarningRepository;
 import com.gigsaathi.gigsaathi.repository.UserRepository;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,7 +29,16 @@ public class EarningController {
     }
 
     @GetMapping("/users/{id}/earnings")
-    public String listEarnings(@PathVariable Long id, Model model) {
+    public String listEarnings(@PathVariable Long id, Authentication authentication, Model model) {
+        // Verify the authenticated user can only access their own data
+        String phoneNumber = authentication.getName();
+        User authenticatedUser = userRepository.findByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + phoneNumber));
+        
+        if (!authenticatedUser.getId().equals(id)) {
+            throw new IllegalArgumentException("You can only view your own earnings");
+        }
+        
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid user Id:" + id));
         List<Earning> earnings = earningRepository.findByUserId(id);
@@ -45,7 +55,16 @@ public class EarningController {
     }
 
     @GetMapping("/users/{id}/earnings/new")
-    public String showEarningForm(@PathVariable Long id, Model model) {
+    public String showEarningForm(@PathVariable Long id, Authentication authentication, Model model) {
+        // Verify the authenticated user can only access their own data
+        String phoneNumber = authentication.getName();
+        User authenticatedUser = userRepository.findByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + phoneNumber));
+        
+        if (!authenticatedUser.getId().equals(id)) {
+            throw new IllegalArgumentException("You can only add earnings to your own account");
+        }
+        
         Earning earning = new Earning();
         earning.setDate(LocalDate.now());
         model.addAttribute("userId", id);
@@ -54,7 +73,16 @@ public class EarningController {
     }
 
     @PostMapping("/users/{id}/earnings")
-    public String createEarning(@PathVariable Long id, @ModelAttribute Earning earning) {
+    public String createEarning(@PathVariable Long id, @ModelAttribute Earning earning, Authentication authentication) {
+        // Verify the authenticated user can only access their own data
+        String phoneNumber = authentication.getName();
+        User authenticatedUser = userRepository.findByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + phoneNumber));
+        
+        if (!authenticatedUser.getId().equals(id)) {
+            throw new IllegalArgumentException("You can only add earnings to your own account");
+        }
+        
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid user Id:" + id));
         

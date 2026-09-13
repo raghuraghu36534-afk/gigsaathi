@@ -600,8 +600,8 @@
 
             <div class="sidebar-footer">
                 <div class="user-info-sidebar">
-                    <div class="user-avatar-sidebar" th:text="${#strings.substring(user.name, 0, 1).toUpperCase()}">U</div>
-                    <div class="user-name-sidebar" th:text="${user.name}">User</div>
+                    <div class="user-avatar-sidebar" th:text="${user.name != null ? #strings.substring(user.name, 0, 1).toUpperCase() : 'U'}">U</div>
+                    <div class="user-name-sidebar" th:text="${user.name != null ? user.name : 'User'}">User</div>
                 </div>
                 <form th:action="@{/logout}" method="post">
                     <button type="submit" class="logout-btn">Logout</button>
@@ -766,15 +766,15 @@
                         <div class="profile-details">
                             <div class="detail-item">
                                 <div class="detail-label">Age</div>
-                                <div class="detail-value" th:text="${user.age}">25</div>
+                                <div class="detail-value" th:text="${user.age != null ? user.age : 'Not provided'}">25</div>
                             </div>
                             <div class="detail-item">
                                 <div class="detail-label">State</div>
-                                <div class="detail-value" th:text="${user.state}">Karnataka</div>
+                                <div class="detail-value" th:text="${user.state != null ? user.state : 'Not provided'}">Karnataka</div>
                             </div>
                             <div class="detail-item">
                                 <div class="detail-label">Phone Number</div>
-                                <div class="detail-value" th:text="${user.phoneNumber}">1234567890</div>
+                                <div class="detail-value" th:text="${user.phoneNumber != null ? user.phoneNumber : 'Not provided'}">1234567890</div>
                             </div>
                             <div class="detail-item">
                                 <div class="detail-label">Member Since</div>
@@ -791,10 +791,10 @@
         // User data from server
         const userData = {
             id: [[${user.id}]],
-            name: [[${user.name}]],
-            phoneNumber: [[${user.phoneNumber}]],
-            age: [[${user.age}]],
-            state: [[${user.state}]]
+            name: [[${user.name != null ? user.name : 'User'}]],
+            phoneNumber: [[${user.phoneNumber != null ? user.phoneNumber : ''}]],
+            age: [[${user.age != null ? user.age : 0}]],
+            state: [[${user.state != null ? user.state : ''}]]
         };
 
         // Eligible schemes from server

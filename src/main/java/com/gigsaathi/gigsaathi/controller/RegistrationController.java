@@ -33,9 +33,16 @@ public class RegistrationController {
     }
 
     @PostMapping("/register")
-    public String registerUser(@Valid @ModelAttribute User user, BindingResult bindingResult) {
+    public String registerUser(@Valid @ModelAttribute User user, BindingResult bindingResult, Model model) {
         if (bindingResult.hasErrors()) {
             log.info("Validation errors during registration: {}", bindingResult.getAllErrors());
+            return "register";
+        }
+        
+        // Check if phone number already exists
+        if (userRepository.findByPhoneNumber(user.getPhoneNumber()).isPresent()) {
+            log.info("Registration failed: Phone number already exists - {}", user.getPhoneNumber());
+            model.addAttribute("error", "This phone number is already registered. Please use a different number or login.");
             return "register";
         }
         

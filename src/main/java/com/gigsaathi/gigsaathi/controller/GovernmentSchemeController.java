@@ -37,7 +37,7 @@ public class GovernmentSchemeController {
         if (authentication != null && authentication.isAuthenticated()) {
             String phoneNumber = authentication.getName();
             User user = userRepository.findByPhoneNumber(phoneNumber).orElse(null);
-            if (user != null) {
+            if (user != null && user.getAge() != null && user.getState() != null) {
                 model.addAttribute("userAge", user.getAge());
                 model.addAttribute("userState", user.getState());
                 model.addAttribute("hasProfile", true);

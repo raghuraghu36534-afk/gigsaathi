@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -42,7 +43,16 @@ public class DashboardApiController {
     }
 
     @GetMapping("/earnings/summary/{userId}")
-    public ResponseEntity<Map<String, Object>> getEarningsSummary(@PathVariable Long userId) {
+    public ResponseEntity<Map<String, Object>> getEarningsSummary(@PathVariable Long userId, Authentication authentication) {
+        // Verify the authenticated user can only access their own data
+        String phoneNumber = authentication.getName();
+        User authenticatedUser = userRepository.findByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + phoneNumber));
+        
+        if (!authenticatedUser.getId().equals(userId)) {
+            return ResponseEntity.badRequest().body(Map.of("error", "You can only view your own earnings"));
+        }
+        
         log.info("Getting earnings summary for user {}", userId);
         
         List<Earning> allEarnings = earningRepository.findByUserId(userId);
@@ -70,7 +80,16 @@ public class DashboardApiController {
     }
 
     @GetMapping("/earnings/recent/{userId}")
-    public ResponseEntity<List<Earning>> getRecentEarnings(@PathVariable Long userId) {
+    public ResponseEntity<List<Earning>> getRecentEarnings(@PathVariable Long userId, Authentication authentication) {
+        // Verify the authenticated user can only access their own data
+        String phoneNumber = authentication.getName();
+        User authenticatedUser = userRepository.findByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + phoneNumber));
+        
+        if (!authenticatedUser.getId().equals(userId)) {
+            return ResponseEntity.badRequest().build();
+        }
+        
         log.info("Getting recent earnings for user {}", userId);
         
         List<Earning> earnings = earningRepository.findByUserIdOrderByDateDesc(userId);
@@ -78,7 +97,16 @@ public class DashboardApiController {
     }
 
     @GetMapping("/earnings/user/{userId}")
-    public ResponseEntity<List<Earning>> getUserEarnings(@PathVariable Long userId) {
+    public ResponseEntity<List<Earning>> getUserEarnings(@PathVariable Long userId, Authentication authentication) {
+        // Verify the authenticated user can only access their own data
+        String phoneNumber = authentication.getName();
+        User authenticatedUser = userRepository.findByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + phoneNumber));
+        
+        if (!authenticatedUser.getId().equals(userId)) {
+            return ResponseEntity.badRequest().build();
+        }
+        
         log.info("Getting all earnings for user {}", userId);
         
         List<Earning> earnings = earningRepository.findByUserIdOrderByDateDesc(userId);
@@ -86,23 +114,35 @@ public class DashboardApiController {
     }
 
     @PostMapping("/earnings/add")
-    public ResponseEntity<?> addEarning(@RequestBody Map<String, Object> earningData) {
+    public ResponseEntity<?> addEarning(@RequestBody Map<String, Object> earningData, Authentication authentication) {
         log.info("Adding earning for user: {}", earningData.get("userId"));
         
         try {
+            // Get the authenticated user's ID from their phone number
+            String phoneNumber = authentication.getName();
+            User authenticatedUser = userRepository.findByPhoneNumber(phoneNumber)
+                    .orElseThrow(() -> new IllegalArgumentException("User not found: " + phoneNumber));
+            
+            // Verify the userId in the request matches the authenticated user
+            Long requestUserId = Long.parseLong(earningData.get("userId").toString());
+            if (!authenticatedUser.getId().equals(requestUserId)) {
+                return ResponseEntity.badRequest().body("You can only add earnings to your own account");
+            }
+            
             Earning earning = new Earning();
             earning.setAmount(new BigDecimal(earningData.get("amount").toString()));
             earning.setDate(LocalDate.parse(earningData.get("date").toString()));
             earning.setSource(earningData.get("source").toString());
             earning.setDescription(earningData.get("description") != null ? earningData.get("description").toString() : null);
             
-            // Set user relationship
-            Long userId = Long.parseLong(earningData.get("userId").toString());
-            User user = userRepository.findById(userId).orElse(null);
-            earning.setUser(user);
+            // Set user relationship - we already verified this is the authenticated user
+            earning.setUser(authenticatedUser);
             
             Earning savedEarning = earningRepository.save(earning);
             return ResponseEntity.ok(savedEarning);
+        } catch (NumberFormatException e) {
+            log.error("Invalid user ID format", e);
+            return ResponseEntity.badRequest().body("Invalid user ID format");
         } catch (Exception e) {
             log.error("Error adding earning", e);
             return ResponseEntity.badRequest().body("Error adding earning: " + e.getMessage());

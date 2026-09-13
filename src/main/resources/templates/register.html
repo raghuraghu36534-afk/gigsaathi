@@ -569,6 +569,11 @@
                          style="color: #dc2626; font-size: 13px; margin-top: 6px;">
                         <span th:errors="*{phoneNumber}">Enter a valid 10-digit Indian mobile number</span>
                     </div>
+                    
+                    <div th:if="${error}" 
+                         style="color: #dc2626; font-size: 13px; margin-top: 6px;">
+                        <span th:text="${error}">Error message</span>
+                    </div>
 
                 </div>
 

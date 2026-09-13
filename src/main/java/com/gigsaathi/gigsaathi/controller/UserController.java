@@ -2,12 +2,15 @@ package com.gigsaathi.gigsaathi.controller;
 
 import com.gigsaathi.gigsaathi.model.User;
 import com.gigsaathi.gigsaathi.repository.UserRepository;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+
+import java.util.List;
 
 @Controller
 public class UserController {
@@ -21,8 +24,13 @@ public class UserController {
     }
 
     @GetMapping("/users")
-    public String listUsers(Model model) {
-        model.addAttribute("users", userRepository.findAll());
+    public String listUsers(Authentication authentication, Model model) {
+        // Only show the current user's own data, not all users
+        String phoneNumber = authentication.getName();
+        User currentUser = userRepository.findByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + phoneNumber));
+        
+        model.addAttribute("users", List.of(currentUser));
         return "users";
     }
 
